@@ -23,7 +23,7 @@ public class LoginCredential extends Credential{
         }
 
         @Override
-        public String getsummary() {
+        public String getSummary() {
             return "Login Credential: " + getLabel() + " for " + url;
         }
     }

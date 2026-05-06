@@ -1,4 +1,3 @@
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -33,5 +32,5 @@ public abstract class Credential{
         return dateCreated;
     }
 
-    public abstract String getsummary();
+    public abstract String getSummary();
 }

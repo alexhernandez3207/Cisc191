@@ -1,7 +1,7 @@
 /**
- * Demonstrates AES-256 symmetric encryption for the password manager project.
- * Generates a random key, encrypts a sample password, then decrypts it back
- * to verify the round-trip works correctly.
+ * Demonstrates AES-256 encryption for the password manager project.
+ * Generates a random key, encrypts a  password, then decrypts it back
+ * to verify the decrypter works correctly.
  *
  * @author  Brennan R & Jesus Hernandez 
  */
@@ -16,11 +16,10 @@ import javax.crypto.Cipher;
 public class CryptoEngine {
 
     /**
-     * Entry point for the encryption demo. Generates an AES-256 key,
-     * encrypts a hard-coded test password, prints the encrypted ciphertext
+     * Generates an AES-256 key,encrypts a hard-coded test password, prints the encrypted ciphertext
      * in Base64, then decrypts it back to confirm the original is recovered.
      *
-     * @param args command-line arguments (not used)
+     * @param args 
      */
     public static void main(String[] args) {
         try {
