@@ -8,12 +8,22 @@
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.Cipher;
 
 
 public class CryptoEngine {
+
+    public static void Encrypt(String password, SecretKey key) throws Exception
+    {
+
+    }
+
+    public static void Decrypt(String encryptedPassword, SecretKey key) throws Exception
+    {
+        
+    }
 
     /**
      * Generates an AES-256 key,encrypts a hard-coded test password, prints the encrypted ciphertext
