@@ -15,44 +15,28 @@ import javax.crypto.SecretKey;
 
 public class CryptoEngine {
 
-    public static void Encrypt(String password, SecretKey key) throws Exception
+    public static String encrypt(String value, SecretKey key) throws Exception
     {
-
-    }
-
-    public static void Decrypt(String encryptedPassword, SecretKey key) throws Exception
-    {
-        
-    }
-
-    /**
-     * Generates an AES-256 key,encrypts a hard-coded test password, prints the encrypted ciphertext
-     * in Base64, then decrypts it back to confirm the original is recovered.
-     *
-     * @param args 
-     */
-    public static void main(String[] args) {
-        try {
-            SecretKey key = generateKey();
-
-            String password = "TestPassword!d0ntSt34l";
-            System.out.println("Original Password: " + password);
-
+        try{
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] encryptedBytes = cipher.doFinal(password.getBytes());
-            String encrypted = Base64.getEncoder().encodeToString(encryptedBytes);
-            System.out.println("Encrypted Password: " + encrypted);
+            byte[] encryptedBytes = cipher.doFinal(value.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        }
+        catch(Exception ex){
+            System.getLogger(CryptoEngine.class.getName())
+                  .log(System.Logger.Level.ERROR, (String) null, ex);
+            throw ex;
+        }
 
+    public static String decrypt(String encryptedValue, SecretKey key) throws Exception
+    {
+            Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedValue));
             String decrypted = new String(decryptedBytes);
             System.out.println("Decrypted Password: " + decrypted);
 
-        } catch (Exception ex) {
-            System.getLogger(CryptoEngine.class.getName())
-                  .log(System.Logger.Level.ERROR, (String) null, ex);
-        }
     }
 
     /**
@@ -67,4 +51,34 @@ public class CryptoEngine {
         keyGen.init(256, SecureRandom.getInstanceStrong());
         return keyGen.generateKey();
     }
+
+    /**
+     * Generates an AES-256 key,encrypts a hard-coded test password, prints the encrypted ciphertext
+     * in Base64, then decrypts it back to confirm the original is recovered.
+     *
+     * @param args 
+     */
+    // public static void main(String[] args) {
+    //     try {
+    //         SecretKey key = generateKey();
+
+    //         String password = "TestPassword!d0ntSt34l";
+    //         System.out.println("Original Password: " + password);
+
+    //         Cipher cipher = Cipher.getInstance("AES");
+    //         cipher.init(Cipher.ENCRYPT_MODE, key);
+    //         byte[] encryptedBytes = cipher.doFinal(password.getBytes());
+    //         String encrypted = Base64.getEncoder().encodeToString(encryptedBytes);
+    //         System.out.println("Encrypted Password: " + encrypted);
+
+    //         cipher.init(Cipher.DECRYPT_MODE, key);
+    //         byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+    //         String decrypted = new String(decryptedBytes);
+    //         System.out.println("Decrypted Password: " + decrypted);
+
+    //     } catch (Exception ex) {
+    //         System.getLogger(CryptoEngine.class.getName())
+    //               .log(System.Logger.Level.ERROR, (String) null, ex);
+    //     }
+    // }
 }
