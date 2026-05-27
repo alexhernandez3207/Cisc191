@@ -39,6 +39,10 @@ public class Vault implements Serializable {
         }
         return false;
     }
+/**
+ * Searches for credentials in the vault that match the given keyword in their label
+ * @param keyword the keyword to search for
+ */
 
     public List<Credential> search(String keyword){
         List<Credential> results = new ArrayList<>();
@@ -53,6 +57,11 @@ public class Vault implements Serializable {
         }
         return results;
     }
+
+    /**
+     * Returns a list of all credentials stored in the vault
+     * @return a list of all credentials in the vault
+     */
 
     public List<Credential> getAllCredentials(){
         List<Credential> all = new ArrayList<>();

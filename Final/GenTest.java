@@ -3,6 +3,7 @@ public class GenTest {
         PasswordGenerator gen = new PasswordGenerator();
 
         // Test generation
+        
         System.out.println(" Generated passwords ");
         for (int i = 0; i < 5; i++) {
             String pwd = gen.generate(16);
@@ -10,6 +11,7 @@ public class GenTest {
         }
 
         // Test scoring on various passwords
+
         System.out.println("\n Strength scores ");
         String[] testPasswords = {
             "abc",
@@ -26,6 +28,7 @@ public class GenTest {
         }
 
         // Test enforcement
+
         System.out.println("\n Enforce strong password ");
         try {
             gen.enforceStrong("weak");
@@ -33,6 +36,10 @@ public class GenTest {
         } catch (WeakPasswordException ex) {
             System.out.println("Rejected: " + ex.getMessage());
         }
+
+    /**
+    * Test that a strong password is accepted by the enforceStrong method
+    */
 
         try {
             gen.enforceStrong("X7$mK9pQ#vL2nR8s");
