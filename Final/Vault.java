@@ -1,13 +1,14 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 /**
  * @author Brennan  & Jesus
  * Represents a vault that can store multiple credentials for a user.
  */
 
-public class Vault {
+public class Vault implements Serializable {
 
     private Map<String, List<Credential>> entries;
     public Vault() {

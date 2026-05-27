@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -6,7 +7,7 @@ import java.util.UUID;
 // Both LoginCredential (user/password/url) and Secure note extend this class
 // */
 
-public abstract class Credential{
+public abstract class Credential implements Serializable {
 
     private  final String id;
     private final LocalDateTime dateCreated;
