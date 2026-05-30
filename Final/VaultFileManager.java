@@ -100,4 +100,17 @@ public class VaultFileManager
         return new java.io.File(VAULT_FILE).exists();
     }
 
+    /**
+     * Deletes the vault.dat and vault.key files from disk. Used for testing purposes to reset the application state.
+     * @return true if both files were successfully deleted or did not exist, false if either file could not be deleted
+     */
+    
+    public static boolean clearAllData(){
+        java.io.File vaultFile = new java.io.File(VAULT_FILE);
+        java.io.File keyFile = new java.io.File("vault.key");
+
+        boolean vaultDeleted = !vaultFile.exists() || vaultFile.delete();
+        boolean keyDeleted = !keyFile.exists() || keyFile.delete();
+        return vaultDeleted && keyDeleted;
+    }
 }

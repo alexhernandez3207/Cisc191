@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import javax.crypto.SecretKey;
  
 /**
  * The main GUI class for the password manager application. 
@@ -22,6 +23,13 @@ public class PasswordManagerGui extends JFrame {
 
         add(mainPanel);
         cardLayout.show(mainPanel, "Login");
+
+    // Set application icon 
+    
+     try {
+        ImageIcon icon = new ImageIcon("icon.png");
+        setIconImage(icon.getImage());
+    } catch (Exception e) {}   
     }
 
 /** 
@@ -30,8 +38,8 @@ public class PasswordManagerGui extends JFrame {
      * @param key The secret key for encryption/decryption.
     
 */
-    public void showVault(Vault vault, javax.crypto.SecretKey key) {
-        mainPanel.add(new VaultPanel(this, vault, key), "Vault");
+    public void showVault(Vault vault, SecretKey key, String username) {
+        mainPanel.add(new VaultPanel(this, vault, key, username), "Vault");
         cardLayout.show(mainPanel, "Vault");
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -50,6 +58,10 @@ public class PasswordManagerGui extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new PasswordManagerGui().setVisible(true));
+    try {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+    } catch (Exception ignored) {}
+    SwingUtilities.invokeLater(() -> new PasswordManagerGui().setVisible(true));
     }
-}
+ }
+

@@ -1,7 +1,8 @@
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 import java.awt.*;
-import javax.swing.event.ListSelectionEvent;
 import javax.crypto.SecretKey;
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -14,33 +15,37 @@ public class VaultPanel extends JPanel {
     private Vault vault;
     private SecretKey key;
 
-    private JList<CredentialItem> credentialList;
-    private DefaultListModel<CredentialItem> listModel;
+    private JTable credentialTable;
+    private CredentialTableModel tableModel;
     private JButton addCredentialButton;
     private JButton viewDetailsButton;
     private JButton deleteCredentialButton;
+    private JButton togglePasswordsButton;
     private JButton logoutButton;
+    private String username;
 
-    public VaultPanel(PasswordManagerGui parent, Vault vault, SecretKey key) {
+    private boolean passwordsVisible = false;
+
+    public VaultPanel(PasswordManagerGui parent, Vault vault, SecretKey key, String username) {
         this.parent = parent;
         this.vault = vault;
         this.key = key;
+        this.username = username;
 
         buildUI();
         loadCredentials();
     }
 
-    /** 
+    /**
      * Builds the user interface for the vault panel.
-    */
-
+     */
     private void buildUI() {
         setLayout(new BorderLayout());
 
         // Top panel with title and logout button
         JPanel topPanel = new JPanel(new BorderLayout());
-        JLabel titleLabel = new JLabel("Account Vault", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        JLabel titleLabel = new JLabel("Welcome back, " + username, SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         topPanel.add(titleLabel, BorderLayout.CENTER);
 
         logoutButton = new JButton("Logout");
@@ -49,16 +54,28 @@ public class VaultPanel extends JPanel {
 
         add(topPanel, BorderLayout.NORTH);
 
-        // Center panel with credential list
+        // Center: the table of credentials
+        tableModel = new CredentialTableModel();
+        credentialTable = new JTable(tableModel);
+        credentialTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        credentialTable.setRowHeight(20);
+        credentialTable.setFont(new Font("Arial", Font.PLAIN, 14));
+        credentialTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        credentialTable.getSelectionModel().addListSelectionListener(e -> {
+            boolean selected = credentialTable.getSelectedRow() != -1;
+            viewDetailsButton.setEnabled(selected);
+            deleteCredentialButton.setEnabled(selected);
+        });
 
-        listModel = new DefaultListModel<>();
-        credentialList = new JList<>(listModel);
-        credentialList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        credentialList.addListSelectionListener(this::onCredentialSelected);
-        add(new JScrollPane(credentialList), BorderLayout.CENTER);
+        // Set column widths
+        credentialTable.getColumnModel().getColumn(0).setPreferredWidth(120);  // Label
+        credentialTable.getColumnModel().getColumn(1).setPreferredWidth(160);  // Username
+        credentialTable.getColumnModel().getColumn(2).setPreferredWidth(140);  // Password
+        credentialTable.getColumnModel().getColumn(3).setPreferredWidth(200);  // Domain
+
+        add(new JScrollPane(credentialTable), BorderLayout.CENTER);
 
         // Bottom panel with action buttons
-
         JPanel bottomPanel = new JPanel();
         addCredentialButton = new JButton("Create");
         addCredentialButton.addActionListener(e -> showAddCredentialDialog());
@@ -74,36 +91,32 @@ public class VaultPanel extends JPanel {
         deleteCredentialButton.addActionListener(e -> deleteSelectedCredential());
         bottomPanel.add(deleteCredentialButton);
 
+        togglePasswordsButton = new JButton("Show Passwords");
+        togglePasswordsButton.addActionListener(e -> togglePasswordVisibility());
+        bottomPanel.add(togglePasswordsButton);
+
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    /** 
-     * Loads the credentials from the vault and displays them in the list.
+    /**
+     * Loads the credentials from the vault and displays them in the table.
      */
-
     private void loadCredentials() {
-        listModel.clear();
-        List<Credential> credentials = vault.getAllCredentials();
-        for (Credential cred : credentials) {
-            listModel.addElement(new CredentialItem(cred));
-        }
+        tableModel.setCredentials(vault.getAllCredentials());
     }
 
-    /** 
-     * Handles the selection of a credential in the list.
-     * @param e the list selection event
-    
-    */
-    private void onCredentialSelected(ListSelectionEvent e) {
-        boolean selected = !credentialList.isSelectionEmpty();
-        viewDetailsButton.setEnabled(selected);
-        deleteCredentialButton.setEnabled(selected);
+    /**
+     * Toggles whether passwords are shown in plaintext or as dots in the table.
+     */
+    private void togglePasswordVisibility() {
+        passwordsVisible = !passwordsVisible;
+        togglePasswordsButton.setText(passwordsVisible ? "Hide Passwords" : "Show Passwords");
+        tableModel.fireTableDataChanged();
     }
 
     /**
      * Shows the dialog for adding a new credential.
      */
-
     private void showAddCredentialDialog() {
         String[] options = {"New Login", "New Note", "Cancel"};
         int choice = JOptionPane.showOptionDialog(this,
@@ -130,18 +143,19 @@ public class VaultPanel extends JPanel {
         });
 
         JPanel panel = new JPanel(new GridLayout(0, 1, 4, 4));
-        panel.add(new JLabel("Label:"));    panel.add(labelField);
+        panel.setPreferredSize(new Dimension(400, 280));
+        panel.add(new JLabel("Name:"));    panel.add(labelField);
         panel.add(new JLabel("Username:")); panel.add(userField);
         panel.add(new JLabel("Password:")); panel.add(pwdField);
         panel.add(generateBtn);
-        panel.add(new JLabel("URL:"));      panel.add(urlField);
+        panel.add(new JLabel("Domain:"));   panel.add(urlField);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Add New Login",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             String label = labelField.getText().trim();
             if (label.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Label is required.");
+                JOptionPane.showMessageDialog(this, "Name is required.");
                 return;
             }
             vault.add(new LoginCredential(label, userField.getText().trim(),
@@ -157,7 +171,7 @@ public class VaultPanel extends JPanel {
 
         JPanel panel = new JPanel(new BorderLayout(4, 4));
         JPanel topFields = new JPanel(new GridLayout(0, 1, 4, 4));
-        topFields.add(new JLabel("Label:"));
+        topFields.add(new JLabel("Name:"));
         topFields.add(labelField);
         topFields.add(new JLabel("Content:"));
         panel.add(topFields, BorderLayout.NORTH);
@@ -172,7 +186,7 @@ public class VaultPanel extends JPanel {
         if (result == JOptionPane.OK_OPTION) {
             String label = labelField.getText().trim();
             if (label.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Label is required.");
+                JOptionPane.showMessageDialog(this, "Name is required.");
                 return;
             }
             SecureNote note = new SecureNote(label, contentArea.getText());
@@ -189,9 +203,9 @@ public class VaultPanel extends JPanel {
     }
 
     private void showCredentialDetails() {
-        CredentialItem item = credentialList.getSelectedValue();
-        if (item == null) return;
-        Credential c = item.credential;
+        int row = credentialTable.getSelectedRow();
+        if (row == -1) return;
+        Credential c = tableModel.getCredentialAt(row);
 
         StringBuilder sb = new StringBuilder();
         sb.append("Label:   ").append(c.getLabel()).append("\n");
@@ -201,7 +215,7 @@ public class VaultPanel extends JPanel {
             LoginCredential lc = (LoginCredential) c;
             sb.append("Username: ").append(lc.getUsername()).append("\n");
             sb.append("Password: ").append(lc.getPassword()).append("\n");
-            sb.append("URL:      ").append(lc.getUrl()).append("\n");
+            sb.append("Domain:   ").append(lc.getUrl()).append("\n");
         } else if (c instanceof SecureNote) {
             SecureNote sn = (SecureNote) c;
             sb.append("Content:\n").append(sn.getContent()).append("\n\n");
@@ -219,13 +233,15 @@ public class VaultPanel extends JPanel {
     }
 
     private void deleteSelectedCredential() {
-        CredentialItem item = credentialList.getSelectedValue();
-        if (item == null) return;
+        int row = credentialTable.getSelectedRow();
+        if (row == -1) return;
+        Credential c = tableModel.getCredentialAt(row);
+
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to delete \"" + item.credential.getLabel() + "\"?",
+                "Are you sure you want to delete \"" + c.getLabel() + "\"?",
                 "Confirm Delete", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
-            vault.remove(item.credential.getId());
+            vault.remove(c.getId());
             saveAndRefresh();
         }
     }
@@ -240,10 +256,52 @@ public class VaultPanel extends JPanel {
         loadCredentials();
     }
 
-   
-    private static class CredentialItem {
-        final Credential credential;
-        CredentialItem(Credential c) { this.credential = c; }
-        @Override public String toString() { return credential.getSummary(); }
+    /**
+     * Custom table model that controls how credentials appear in each row and column.
+     */
+    private class CredentialTableModel extends AbstractTableModel {
+        private final String[] columns = {"Name", "Username", "Password", "Domain"};
+        private List<Credential> credentials = new ArrayList<>();
+
+        public void setCredentials(List<Credential> list) {
+            this.credentials = list;
+            fireTableDataChanged();
+        }
+
+        public Credential getCredentialAt(int row) {
+            return credentials.get(row);
+        }
+
+        @Override public int getRowCount()    { return credentials.size(); }
+        @Override public int getColumnCount() { return columns.length; }
+        @Override public String getColumnName(int col) { return columns[col]; }
+
+        @Override
+        public Object getValueAt(int row, int col) {
+            Credential c = credentials.get(row);
+
+            if (c instanceof LoginCredential) {
+                LoginCredential lc = (LoginCredential) c;
+                switch (col) {
+                    case 0: return lc.getLabel();
+                    case 1: return lc.getUsername();
+                    case 2: return passwordsVisible ? lc.getPassword() : "••••••••";
+                    case 3: return lc.getUrl();
+                }
+            } else if (c instanceof SecureNote) {
+                SecureNote sn = (SecureNote) c;
+                switch (col) {
+                    case 0: return sn.getLabel();
+                    case 1: return "—";
+                    case 2: return passwordsVisible
+                            ? (sn.getContent().length() > 20
+                                ? sn.getContent().substring(0, 20) + "..."
+                                : sn.getContent())
+                            : "••••••••";
+                    case 3: return "(" + sn.getTags().size() + " tags)";
+                }
+            }
+            return "";
+        }
     }
 }

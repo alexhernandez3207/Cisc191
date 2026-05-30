@@ -7,7 +7,7 @@ public class LoginPanel extends JPanel {
     private PasswordManagerGui parent;
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JLabel strengthLabel;
+    private JProgressBar strengthBar;
     private JButton actionButton;
     private JLabel statusLabel;
     private JCheckBox showPasswordCheckBox;
@@ -78,9 +78,9 @@ public class LoginPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
-        strengthLabel = new JLabel(" ");
-        strengthLabel.setFont(new Font("Arial", Font.ITALIC, 12));
-        add(strengthLabel, gbc);
+        strengthBar = new JProgressBar(0, 7);
+        strengthBar.setStringPainted(true);
+        add(strengthBar, gbc);
 
         // Live strength updates
 
@@ -105,25 +105,53 @@ public class LoginPanel extends JPanel {
         statusLabel = new JLabel(" ");
         statusLabel.setForeground(Color.RED);
         add(statusLabel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.gridwidth = 2;
+        JButton clearDataButton = new JButton("Data Wipe");
+        clearDataButton.setForeground(Color.RED);
+        clearDataButton.addActionListener(e -> handleClearData());
+        add(clearDataButton, gbc);
     }
 
     // Updates the strength label color and text based on the current password
-    private void updateStrength() {
-        String pwd = new String(passwordField.getPassword());
-        if (pwd.isEmpty()) {
-            strengthLabel.setText(" ");
-            return;
-        }
-        String label = generator.strengthLabel(pwd);
-        int score = generator.scoreStrength(pwd);
-        strengthLabel.setText("Password Strength: " + label + " (" + score + "/7)");
+       private void updateStrength() {
+    String pwd = new String(passwordField.getPassword());
 
-        if (score < 3) {
-            strengthLabel.setForeground(Color.RED);
-        } else if (score < 5) {
-            strengthLabel.setForeground(Color.ORANGE);
-        } else {
-            strengthLabel.setForeground(new Color(0, 128, 0));  // Dark Green
+    if (pwd.isEmpty()) {
+        strengthBar.setValue(0);
+        strengthBar.setString("Enter a password");
+        return;
+    }
+
+    int score = generator.scoreStrength(pwd);
+    String label = generator.strengthLabel(pwd);
+
+    strengthBar.setValue(score);
+    strengthBar.setString(label);
+
+    if (score < 3)      strengthBar.setForeground(Color.RED);
+    else if (score < 5) strengthBar.setForeground(Color.ORANGE);
+    else                strengthBar.setForeground(new Color(0, 130, 0));
+
+    }
+
+    private void handleClearData() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to wipe all data? This action cannot be undone.",
+                "Confirm Data Wipe", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean cleared = VaultFileManager.clearAllData();
+            if (cleared) {
+               statusLabel.setForeground(new Color(0, 130, 0));
+                statusLabel.setText("All data wiped. Please restart the application.");
+                parent.showLogin();
+
+            } else {
+                statusLabel.setForeground(Color.RED);
+                statusLabel.setText("Error: Could not clear data. Please check file permissions.");
+            }
         }
     }
 
@@ -150,13 +178,13 @@ public class LoginPanel extends JPanel {
 
             statusLabel.setForeground(new Color(0, 130, 0));
             statusLabel.setText("Account created. Loading vault...");
-            parent.showVault(vault, key);
+            parent.showVault(vault, key, username);
 
         } else {
             // Login: load the vault from disk
             SecretKey key = VaultFileManager.loadKey();
             Vault vault = VaultFileManager.loadVault(key);
-            parent.showVault(vault, key);
+            parent.showVault(vault, key, username);
         }
 
     } catch (WeakPasswordException ex) {
