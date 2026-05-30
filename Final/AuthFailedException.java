@@ -1,5 +1,5 @@
 /**
- * Custom exception class for authentication failures
+ * Custom exception class for authentication failures 
  */
 public class AuthFailedException extends Exception 
 {
