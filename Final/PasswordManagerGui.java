@@ -1,15 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
 import javax.crypto.SecretKey;
- 
 /**
- * The main GUI class for the password manager application. 
- *
+ * @author Brennan  & Jesus
+ * The main GUI class for the password manager application, responsible for displaying the login and vault panels.
  */
+
 public class PasswordManagerGui extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
 
+
+    /**  Constructs the main GUI for the password manager application, initializing the login panel and setting up the frame.*/
+    
     public PasswordManagerGui() {
         setTitle("EncryptedKeyz");
         setSize(700, 500);

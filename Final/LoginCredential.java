@@ -1,3 +1,7 @@
+/**
+ * LoginCredential class represents a login credential with a username, password, and URL.
+ */
+
 public class LoginCredential extends Credential{
 
     private String username;

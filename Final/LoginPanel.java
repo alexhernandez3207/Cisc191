@@ -2,6 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import javax.crypto.SecretKey;
 
+/**
+ * @author Brennan  & Jesus
+ * Represents the login panel of the password manager application, allowing users to register or log in.
+ */
+
 public class LoginPanel extends JPanel {
 
     private PasswordManagerGui parent;
@@ -22,6 +27,8 @@ public class LoginPanel extends JPanel {
 
         buildUI();
     }
+
+/** Builds the user interface for the login panel. */
 
     private void buildUI() {
         setLayout(new GridBagLayout());
@@ -106,6 +113,8 @@ public class LoginPanel extends JPanel {
         statusLabel.setForeground(Color.RED);
         add(statusLabel, gbc);
 
+        // Data wipe button
+
         gbc.gridx = 0;
         gbc.gridy = 7;
         gbc.gridwidth = 2;
@@ -137,6 +146,8 @@ public class LoginPanel extends JPanel {
 
     }
 
+    // Handles the data wipe action, confirming with the user before clearing all stored data
+
     private void handleClearData() {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Are you sure you want to wipe all data? This action cannot be undone.",
@@ -154,6 +165,8 @@ public class LoginPanel extends JPanel {
             }
         }
     }
+
+    // Handles the login or registration action based on the current mode, validating input and providing feedback to the user
 
     private void handleAction() {
     String username = usernameField.getText().trim();
